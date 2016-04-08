@@ -1,0 +1,209 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+
+<script src="../../bower_components/d3/d3.min.js"></script>
+
+<!--<script src="../../bower_components/underscore/underscore-min.js"></script>-->
+<script src="../../scripts/radarChart.js"></script>
+
+<dom-module id="paris-radar-chart">
+  <template>
+    <style include="shared-styles iron-flex">
+
+    </style>
+
+    <h1>Emotion</h1>
+
+    <div id="radarChart">
+      <svg id="outerLayer">
+        <svg id="layerradar"></svg>
+      </svg>
+    </div>
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'paris-radar-chart',
+
+        properties: {
+          emotions: {
+            type: Object,
+            notify: true,
+            observer: '_emotionsChanged'
+          }
+
+        },
+
+        _emotionsChanged: function (newValue, oldValue) {
+          if (this.radarChartOptions !== undefined && newValue instanceof Array) {
+            RadarChart(this.$.layerradar, newValue, this.radarChartOptions);
+          }
+        },
+
+        attached: function () {
+          this.width = window.innerWidth;
+          this.async(function () {
+            this.width = this.$.radarChart.clientWidth;
+          }, 1);
+        },
+
+        ready: function () {
+
+//          this.scopeSubtree(this.$.radarChart, true);
+
+          this.emotions = {
+            anticipation: 0,
+            joy: 0,
+            sadness: 0,
+            disgust: 0,
+            anger: 0,
+            surprise: 0,
+            fear: 0,
+            trust: 0
+          };
+
+          //////////////////////////////////////////////////////////////
+          ////////////////////////// Data //////////////////////////////
+          //////////////////////////////////////////////////////////////
+
+          this.emotions2 = this.emotions;
+          this.emotions = [[]];
+
+          var order = ["anticipation", "joy", "trust", "fear", "surprise", "sadness", "disgust", "anger"];
+
+
+          for (var key in this.emotions2) {
+            if (this.emotions2.hasOwnProperty(key)) {
+              var val = this.emotions2[key];
+              this.emotions[0].push({axis: key, value: val, id:order.indexOf(key)})
+            }
+          }
+
+          this.emotions[0] = this.emotions[0].sort(function (a,b) {
+            return a.id - b.id;
+          });
+
+          //////////////////////////////////////////////////////////////
+          //////////////////// Draw the Chart //////////////////////////
+          //////////////////////////////////////////////////////////////
+
+          var marginHack = (window.innerWidth < 600) ? 0 : 50;
+          var multiplier = (window.innerWidth > 1200) ? 0.45 : 0.9;
+
+          var minHeight = (window.innerHeight > 1200) ? 320 : 190;
+
+//          this.margin = {top: 60, right: 60, bottom: 60, left: 60},
+//            this.width = ((window.innerWidth*multiplier)-marginHack)*0.9 - this.margin.left - this.margin.right,
+//            this.height = d3.min([this.width, minHeight, window.innerHeight - this.margin.top - this.margin.bottom - 20]);
+
+
+          this.margin = {top: 60, right: 60, bottom: 60, left: 60},
+            this.width = ((window.innerWidth * multiplier) - marginHack) * 0.9 - this.margin.left - this.margin.right,
+            this.height = d3.min([this.width, minHeight]);
+
+          this.color = d3.scale.ordinal()
+            .range(["#1976D2", "#CC333F", "#00A0B0"]);
+
+          this.radarChartOptions = {
+            w: this.width,
+            h: this.height,
+            margin: this.margin,
+            maxValue: 0.1,
+            levels: 4,
+            roundStrokes: true,
+            color: this.color
+          };
+
+          RadarChart(this.$.layerradar, this.emotions, this.radarChartOptions);
+          console.log(this.$.radarChart);
+
+          var width = this.width + this.margin.left + this.margin.right,
+            height = this.height + this.margin.top + this.margin.bottom,
+            τ = 2 * Math.PI;
+
+          var svg = d3.select(this.$.outerLayer).attr("width", width).attr("height",height);
+
+
+// An arc function with all values bound except the endAngle. So, to compute an
+// SVG path string for a given angle, we pass an object with an endAngle
+// property to the `arc` function, and it will return the corresponding string.
+
+          var outerRadiusHack = (window.innerHeight > 1200) ? 161 : 94;
+          var arc = d3.svg.arc()
+            .innerRadius(0)
+            .outerRadius(outerRadiusHack);
+//            .startAngle(0);
+
+// Create the SVG container, and apply a transform such that the origin is the
+// center of the canvas. This way, we don't need to position arcs individually.
+          var arcLayer = svg.append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+
+          var opacity = 0.3;
+
+          console.log(this.emotions);
+
+          var index = 0;
+          this.emotions[0].forEach(function (emo) {
+            arcLayer.append("path")
+              .datum({startAngle: (index * τ/8) - τ/16, endAngle: (index+1)*τ/8 - τ/16 })
+              .style("fill", getColorEmotion(emo.axis))
+              .style("opacity", opacity)
+              .attr("d", arc);
+            index++;
+            console.log(emo.axis)
+          });
+
+          function getColorEmotion(emotion) {
+            switch (emotion) {
+              case "joy":
+                    return "yellow";
+              case "trust":
+                    return "green";
+              case "fear":
+                    return "white";
+              case "surprise":
+                    return "lightblue";
+              case "sadness":
+                    return "blue";
+              case "disgust":
+                    return "purple";
+              case "anger":
+                    return "red";
+              case "anticipation":
+                    return "orange";
+              default:
+                    return "black";
+            }
+          }
+// Add the foreground arc in orange, currently showing 12.7%.
+//          var joy = arcLayer.append("path")
+//            .datum({startAngle: τ/16, endAngle: 3*τ/16})
+//            .style("fill", "yellow")
+//            .style("opacity", opacity)
+//            .attr("d", arc);
+
+        }
+      });
+    })();
+  </script>
+</dom-module>

@@ -1,0 +1,112 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<dom-module id="my-sentiment">
+  <template>
+    <style include="shared-styles iron-flex">
+      #sentimentSlider {
+        width: 170px;
+        margin: 80px;
+        --webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+      }
+      .sentiment-container {
+        padding-top: 16px;
+
+      }
+      @media (min-height: 1200px) {
+        #sentimentSlider {
+          width: 340px;
+          margin: 150px;
+        }
+        .sentiment-container {
+          padding-top: 16px;
+        }
+      }
+    </style>
+
+    <h1>Sentiment</h1>
+
+
+    <div  class="sentiment-container layout vertical center">
+        <iron-image alt="Sad" style="width:40px; height:40px;" sizing="contain"
+                    src="../../images/sad.jpg"></iron-image>
+        <paper-slider id="sentimentSlider"  pin="true" step="0.01" snaps="false" min=0 max=1
+                      value="{{sentiments.positive}}f"></paper-slider>
+        <iron-image alt="Happy" style="width:40px; height:40px;" sizing="contain"
+                    src="../../images/happy.png"></iron-image>
+      </div>
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'my-sentiment',
+
+        ready: function () {
+          var slider = this.$.sentimentSlider;
+          slider._trackX = function(e) {
+
+            if (!slider.dragging) {
+              slider._trackStart(e);
+            }
+
+            var dx = Math.min(slider._maxx, Math.max(slider._minx, (-1 * e.detail.dy)));
+            slider._x = slider._startx + dx;
+
+            var immediateValue = slider._calcStep(slider._calcKnobPosition(slider._x / slider._w));
+            slider._setImmediateValue(immediateValue);
+
+            // update knob's position
+            var translateY = ((slider._calcRatio(immediateValue) * slider._w) - slider._startx);
+            slider.translate3d(translateY + 'px', 0, 0, slider.$.sliderKnob);
+          };
+
+          slider._bardown = function(event) {
+            slider._w = slider.$.sliderBar.offsetWidth;
+            var rect = slider.$.sliderBar.getBoundingClientRect();
+            var ratio = ((rect.bottom - event.detail.y) / slider._w);
+            var prevRatio = slider.ratio;
+
+            slider._setTransiting(true);
+
+            slider._positionKnob(ratio);
+
+            slider.debounce('expandKnob', slider._expandKnob, 60);
+
+            // if the ratio doesn't change, sliderKnob's animation won't start
+            // and `_knobTransitionEnd` won't be called
+            // Therefore, we need to manually update the `transiting` state
+
+            if (prevRatio === slider.ratio) {
+              slider._setTransiting(false);
+            }
+
+            slider.async(function() {
+              slider.fire('change');
+            });
+
+            // cancel selection
+            event.preventDefault();
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>

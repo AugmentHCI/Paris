@@ -1,0 +1,154 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html"/>
+<link rel="import" href="../../bower_components/paper-button/paper-button.html"/>
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+
+<dom-module id="my-personality">
+  <template>
+    <style include="shared-styles iron-flex">
+      /*paper-slider {*/
+      /*width: 100%;*/
+      /*}*/
+      .personality-label-left {
+        width: 160px;
+      }
+      .personality-label-right {
+        width: 100px;
+      }
+    </style>
+
+
+    <h2 class="page-title">{{title}}</h2>
+    <!--<h3>You can enter your text below</h3>-->
+
+    <paper-textarea label="Please enter your text here. Click the button below to convert your text."
+                    value="{{searchCriterion}}"></paper-textarea>
+
+    <div style="text-align:center;">
+      <paper-button raised on-click="convertToPersonality">Analyze</paper-button>
+    </div>
+
+    <h3>Results</h3>
+    <div>
+      <!--<div class="layout horizontal">-->
+        <!--<span>Openness: {{personalities.openness}}</span>-->
+        <!--<paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5-->
+                      <!--value="{{personalities.openness}}f"></paper-slider>-->
+        <!--<span>Closed</span>-->
+      <!--</div>-->
+
+      <div class="layout horizontal">
+        <span class="personality-label-left">Open to new experiences</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.openness}}f"></paper-slider>
+        <span class="personality-label-right">Closed-minded</span>
+      </div>
+      <div class="layout horizontal">
+        <span class="personality-label-left">Conscientious</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.conscientiousness}}f"></paper-slider>
+        <span class="personality-label-right">Disorganized</span>
+      </div>
+      <div class="layout horizontal">
+        <span class="personality-label-left">Extraverted</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.extraversion}}f"></paper-slider>
+        <span class="personality-label-right">Introverted</span>
+      </div>
+      <div class="layout horizontal">
+        <span class="personality-label-left">Nervous</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.neuroticism}}f"></paper-slider>
+        <span class="personality-label-right">Relaxed</span>
+      </div>
+      <div class="layout horizontal">
+        <span class="personality-label-left">Agreeable</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.agreeableness}}f"></paper-slider>
+        <span class="personality-label-right">Disagreeable</span>
+      </div>
+    </div>
+
+    <!--<h3>JSON output</h3>-->
+    <!--<code>[[printedJson]]</code>-->
+
+    <iron-ajax id="personality"
+               url="http://augment.cs.kuleuven.be/paris/api/personality"
+               method="POST"
+               handle-as="json"
+               content-type="text/plain"
+               last-response="{{data}}"
+               params="{{ajaxParams}}"
+               on-response="responseHandler"
+               on-error="handleError"></iron-ajax>
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'my-personality',
+
+        properties: {
+          thePersonalities: {
+            type: "Object",
+            notify: true
+          },
+          ajaxParams: {
+            type: String,
+            computed: 'buildSearchRequest(searchCriterion)'
+          }
+        },
+
+        ready: function () {
+          this.title = "Personality";
+          this.personalities = {agreeableness: 0, conscientiousness: 0, extraversion: 0, neuroticism: 0, openness: 0};
+          this.printedJson = "No JSON output available yet.";
+        },
+
+        buildSearchRequest: function (searchCriterion) {
+          this.$.personality.body = searchCriterion;
+        },
+
+        convertToPersonality: function () {
+          this.$.personality.generateRequest();
+        },
+
+        handleError: function (e) {
+          alert('Whoops! ' + e.detail);
+        },
+
+        responseHandler: function (e, detail) {
+          this.personalityJSON = detail.xhr.response.personality;
+          for (var p in this.personalityJSON) {
+            this.personalityJSON[p] = this.personalityJSON[p].toFixed(3);
+          }
+          this.personalities = this.personalityJSON;
+          this.thePersonalities = this.personalities;
+          this.printedJson = JSON.stringify(detail.xhr.response, null, '\t');
+//          this.$.jsoncode(this.printedJson);
+        }
+
+      });
+    })();
+  </script>
+</dom-module>

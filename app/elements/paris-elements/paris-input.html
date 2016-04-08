@@ -1,0 +1,168 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html"/>
+<link rel="import" href="../../bower_components/paper-button/paper-button.html"/>
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-signals/iron-signals.html">
+<link rel="import" href="../../bower_components/facebook-login/dist/facebook-login.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+
+<script src="../../bower_components/d3/d3.min.js"></script>
+<script src="../../bower_components/underscore/underscore-min.js"></script>
+<script src="../../scripts/radarChart.js"></script>
+
+<dom-module id="paris-input">
+  <template>
+    <style include="shared-styles iron-flex">
+      facebook-login {
+        margin: 32px;
+      }
+
+    </style>
+
+    <div class="layout horizontal">
+
+      <div class="layout vertical flex">
+
+      <paper-textarea label="Please write here and click on the Analyze button to get the predictions of your writing. You can also login with Facebook to analyze your status updates."
+                    value="{{searchCriterion2}}"
+                    char-counter maxlength="1000"></paper-textarea>
+
+    <div style="text-align:center;">
+      <paper-button raised on-click="convertToEmotion">Analyze</paper-button>
+    </div>
+
+      </div>
+
+      <facebook-login
+        button-size="xlarge"
+      appID="743333545708443"
+      logout-link graph-url="me?fields=name,email,birthday"
+      scope="public_profile email user_birthday"
+      graph-response="{{resp}}"
+      auto-api-call></facebook-login>
+
+    </div>
+
+    <iron-ajax id="emotion"
+               url="http://augment.cs.kuleuven.be/paris/api/emotion"
+               method="POST"
+               handle-as="json"
+               content-type="text/plain"
+               last-response="{{data}}"
+               params="{{ajaxParams}}"
+               on-response="responseHandler"
+               on-error="handleError"></iron-ajax>
+
+    <iron-ajax id="personality"
+               url="http://augment.cs.kuleuven.be/paris/api/personality"
+               method="POST"
+               handle-as="json"
+               content-type="text/plain"
+               last-response="{{dataPersonality}}"
+               params="{{ajaxParams}}"
+               on-response="responseHandlerPersonality"
+               on-error="handleError"></iron-ajax>
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'paris-input',
+
+        properties: {
+          ajaxParams: {
+            type: String,
+            computed: 'buildSearchRequest(searchCriterion2)'
+          },
+          personalities: {
+            type: Object,
+            notify: true
+          },
+          sentiments: {
+            type: Object,
+            notify: true
+          },
+          emotions: {
+            type: Object,
+            notify: true
+          }
+        },
+
+        ready: function () {
+
+//          this.scopeSubtree(this.$.radarChart, true);
+
+//          this.title = "Emotion";
+          this.emotions = {anticipation: 0, joy: 0, trust: 0, fear: 0, surprise: 0, sadness: 0, disgust: 0, anger: 0};
+//          this.sentiments = {positive: 0, negative: 0};
+//          this.personalities = {agreeableness: 0, conscientiousness: 0, extraversion: 0, neuroticism: 0, openness: 0};
+        },
+
+        buildSearchRequest: function (searchCriterion2) {
+          this.$.emotion.body = searchCriterion2;
+        },
+
+        convertToEmotion: function () {
+          this.$.emotion.generateRequest();
+          this.$.personality.generateRequest();
+        },
+
+        handleError: function (e) {
+          alert('Whoops! ' + e.detail.error + " See console for more detailed error message.");
+          console.log(e.detail);
+        },
+
+        responseHandler: function (e, detail) {
+          this.emotionJSON = detail.xhr.response.emotion;
+          this.sentiments = detail.xhr.response.sentiment;
+          for (var p in this.emotionJSON) {
+            this.emotionJSON[p] = this.emotionJSON[p].toFixed(3);
+          }
+          this.emotions = this.emotionJSON;
+          this.data = [[]];
+
+          for (var key in this.emotions) {
+            if (this.emotions.hasOwnProperty(key)) {
+              var val = this.emotions[key];
+              this.data[0].push({axis: key, value: val})
+            }
+          }
+
+          this.emotions = this.data;
+//          this.fire("emotions-changed");
+//          RadarChart(this.$.radarChart, this.data, this.radarChartOptions);
+        },
+
+        responseHandlerPersonality: function (e, detail) {
+          this.personalityJSON = detail.xhr.response.personality;
+          for (var p in this.personalityJSON) {
+            this.personalityJSON[p] = this.personalityJSON[p].toFixed(3);
+          }
+          this.personalities = this.personalityJSON;
+        }
+
+
+      });
+    })();
+  </script>
+</dom-module>

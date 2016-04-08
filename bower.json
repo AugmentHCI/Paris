@@ -7,7 +7,17 @@
     "page": "visionmedia/page.js#~1.6.4",
     "paper-elements": "PolymerElements/paper-elements#^1.0.1",
     "platinum-elements": "PolymerElements/platinum-elements#^1.1.0",
-    "polymer": "Polymer/polymer#^1.2.0"
+    "polymer": "Polymer/polymer#^1.2.0",
+    "paper-input": "PolymerElements/paper-input#^1.1.8",
+    "byutv-jsonp": "^1.2.0",
+    "iron-jsonp-library": "PolymerElements/iron-jsonp-library#^1.0.4",
+    "chart-elements": "^2.0.2",
+    "google-chart": "GoogleWebComponents/google-chart#^1.0.4",
+    "prism-js": "^1.0.0",
+    "d3": "^3.5.16",
+    "underscore": "^1.8.3",
+    "jquery": "^2.2.3",
+    "facebook-login": "*"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
