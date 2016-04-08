@@ -1,0 +1,89 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../styles/app-theme.html">
+
+
+<dom-module id="my-personality">
+  <template>
+    <style include="shared-styles iron-flex">
+      .personality-label-left {
+        font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #333;
+        font-size: small;
+        width: 150px;
+        margin: 10px 10px;
+      }
+
+      .personality-label-right {
+        font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #333;
+        font-size: small;
+        margin: 10px 10px;
+        width: 90px;
+      }
+      /*.personality-body {*/
+        /*padding: 16px 16px;*/
+      /*}*/
+      .personality-elem {
+        padding-top: 20px;
+        width: 100%;
+      }
+
+      @media (min-height: 1200px) {
+        .personality-elem {
+          padding-top: 50px;
+          width: 100%;
+        }
+      }
+    </style>
+
+    <h1>Personality</h1>
+
+    <div class="personality-body layout vertical center start">
+      <div class="layout horizontal personality-elem">
+        <span class="personality-label-left">Open to new experiences</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.openness}}f"></paper-slider>
+        <span class="personality-label-right">Closed-minded</span>
+      </div>
+      <div class="layout horizontal personality-elem">
+        <span class="personality-label-left">Conscientious</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.conscientiousness}}f"></paper-slider>
+        <span class="personality-label-right">Disorganized</span>
+      </div>
+      <div class="layout horizontal personality-elem">
+        <span class="personality-label-left">Extraverted</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.extraversion}}f"></paper-slider>
+        <span class="personality-label-right">Introverted</span>
+      </div>
+      <div class="layout horizontal personality-elem">
+        <span class="personality-label-left">Nervous</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.neuroticism}}f"></paper-slider>
+        <span class="personality-label-right">Relaxed</span>
+      </div>
+      <div class="layout horizontal personality-elem">
+        <span class="personality-label-left">Agreeable</span>
+        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.agreeableness}}f"></paper-slider>
+        <span class="personality-label-right">Disagreeable</span>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'my-personality'
+      });
+    })();
+  </script>
+</dom-module>
