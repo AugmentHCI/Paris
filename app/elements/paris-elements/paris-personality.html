@@ -14,7 +14,7 @@
         font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         color: #333;
         font-size: small;
-        width: 150px;
+        width: 88px;
         margin: 10px 10px;
       }
 
@@ -23,7 +23,7 @@
         color: #333;
         font-size: small;
         margin: 10px 10px;
-        width: 90px;
+        width: 145px;
       }
       /*.personality-body {*/
         /*padding: 16px 16px;*/
@@ -33,6 +33,16 @@
         width: 100%;
       }
 
+      .slider-markers::after,
+      .slider-marker::after {
+        content: "";
+        display: block;
+        margin-left: -1px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: black;
+      }
       @media (min-height: 1200px) {
         .personality-elem {
           padding-top: 50px;
@@ -42,37 +52,36 @@
     </style>
 
     <h1>Personality</h1>
-
     <div class="personality-body layout vertical center start">
       <div class="layout horizontal personality-elem">
-        <span class="personality-label-left">Open to new experiences</span>
-        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+        <span class="personality-label-left">Closed-minded</span>
+        <paper-slider id="testy" class="flex" pin="true" max-markers="2" step="0.1" snaps="false" min=1 max=5
                       value="{{personalities.openness}}f"></paper-slider>
-        <span class="personality-label-right">Closed-minded</span>
+        <span class="personality-label-right">Open to new experiences</span>
       </div>
       <div class="layout horizontal personality-elem">
-        <span class="personality-label-left">Conscientious</span>
-        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
-                      value="{{personalities.conscientiousness}}f"></paper-slider>
-        <span class="personality-label-right">Disorganized</span>
+        <span class="personality-label-left">Disorganized</span>
+        <paper-slider class="flex" pin="true" max-markers="2" step="0.1" snaps="false" min=1 max=5
+                      value="{{personalities.conscientiousness}}f" secondary-progress="85"></paper-slider>
+        <span class="personality-label-right">Conscientious</span>
       </div>
       <div class="layout horizontal personality-elem">
-        <span class="personality-label-left">Extraverted</span>
-        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+        <span class="personality-label-left">Introverted</span>
+        <paper-slider class="flex" pin="true" max-markers="2" step="0.1" snaps="false" min=1 max=5
                       value="{{personalities.extraversion}}f"></paper-slider>
-        <span class="personality-label-right">Introverted</span>
+        <span class="personality-label-right">Extraverted</span>
       </div>
       <div class="layout horizontal personality-elem">
-        <span class="personality-label-left">Nervous</span>
-        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+        <span class="personality-label-left">Relaxed</span>
+        <paper-slider class="flex" pin="true" max-markers="2" step="0.1" snaps="false" min=1 max=5
                       value="{{personalities.neuroticism}}f"></paper-slider>
-        <span class="personality-label-right">Relaxed</span>
+        <span class="personality-label-right">Nervous</span>
       </div>
       <div class="layout horizontal personality-elem">
-        <span class="personality-label-left">Agreeable</span>
-        <paper-slider class="flex" pin="true" step="0.1" snaps="false" min=1 max=5
+        <span class="personality-label-left">Disagreeable</span>
+        <paper-slider class="flex" pin="true" max-markers="2" step="0.1" snaps="false" min=1 max=5
                       value="{{personalities.agreeableness}}f"></paper-slider>
-        <span class="personality-label-right">Disagreeable</span>
+        <span class="personality-label-right">Agreeable</span>
       </div>
     </div>
   </template>

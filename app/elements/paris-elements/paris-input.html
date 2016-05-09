@@ -23,7 +23,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-
 <script src="../../bower_components/d3/d3.min.js"></script>
 <script src="../../bower_components/underscore/underscore-min.js"></script>
 <script src="../../scripts/radarChart.js"></script>
@@ -41,45 +40,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <div class="layout vertical flex">
 
-      <paper-textarea label="Please write here and click on the Analyze button to get the predictions of your writing. You can also login with Facebook to analyze your status updates."
-                    value="{{searchCriterion2}}"
-                    char-counter maxlength="1000"></paper-textarea>
+        <paper-textarea
+          label="{{textLabel}}"
+          value="{{searchCriterion2}}"
+          char-counter maxlength="1000"></paper-textarea>
 
-    <div style="text-align:center;">
-      <paper-button raised on-click="convertToEmotion">Analyze</paper-button>
-    </div>
+        <div style="text-align:center;">
+          <paper-button raised on-click="convertToEmotion">Analyze</paper-button>
+        </div>
 
       </div>
 
       <facebook-login
         button-size="xlarge"
-      appID="743333545708443"
-      logout-link graph-url="me?fields=name,email,birthday"
-      scope="public_profile email user_birthday"
-      graph-response="{{resp}}"
-      auto-api-call></facebook-login>
+        appID="983849391692565"
+        logout-link graph-url="me?fields=posts.limit(100)"
+        scope="user_posts"
+        graph-response="{{resp}}"
+        auto-api-call="testcall"></facebook-login>
 
     </div>
 
-    <iron-ajax id="emotion"
-               url="http://augment.cs.kuleuven.be/paris/api/emotion"
-               method="POST"
-               handle-as="json"
-               content-type="text/plain"
-               last-response="{{data}}"
-               params="{{ajaxParams}}"
-               on-response="responseHandler"
-               on-error="handleError"></iron-ajax>
+    <iron-ajax
+      id="emotion"
+      url="http://augment.cs.kuleuven.be/paris/api/emotion"
+      method="POST"
+      handle-as="json"
+      content-type="text/plain"
+      params="{{ajaxParams}}"
+      on-response="responseHandler"
+      on-error="handleError"></iron-ajax>
 
-    <iron-ajax id="personality"
-               url="http://augment.cs.kuleuven.be/paris/api/personality"
-               method="POST"
-               handle-as="json"
-               content-type="text/plain"
-               last-response="{{dataPersonality}}"
-               params="{{ajaxParams}}"
-               on-response="responseHandlerPersonality"
-               on-error="handleError"></iron-ajax>
+    <iron-ajax
+      id="personality"
+      url="http://augment.cs.kuleuven.be/paris/api/personality"
+      method="POST"
+      handle-as="json"
+      content-type="text/plain"
+      params="{{ajaxParams}}"
+      on-response="responseHandlerPersonality"
+      on-error="handleError"></iron-ajax>
+
+    <iron-ajax
+      id="agegender"
+      url=" http://augment.cs.kuleuven.be/paris/api/agegender"
+      method="POST"
+      handle-as="json"
+      content-type="text/plain"
+      params="{{ajaxParams}}"
+      on-response="responseHandlerAgeGender"
+      on-error="handleError"></iron-ajax>
+
+
   </template>
 
   <script>
@@ -105,26 +117,55 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           emotions: {
             type: Object,
             notify: true
+          },
+          gender: {
+            type: Object,
+            notify: true
+          },
+          age: {
+            type: Object,
+            notify: true
+          },
+          textLabel: {
+            type: String,
+            value: "Please write here and click on the Analyze button to get the predictions of your writing. You can also login with Facebook to analyze your status updates."
           }
         },
 
         ready: function () {
-
-//          this.scopeSubtree(this.$.radarChart, true);
-
-//          this.title = "Emotion";
           this.emotions = {anticipation: 0, joy: 0, trust: 0, fear: 0, surprise: 0, sadness: 0, disgust: 0, anger: 0};
-//          this.sentiments = {positive: 0, negative: 0};
-//          this.personalities = {agreeableness: 0, conscientiousness: 0, extraversion: 0, neuroticism: 0, openness: 0};
+        },
+
+        listeners: {
+          'graph-response': 'testcall'
+        },
+
+        testcall: function (a) {
+          var postsData = a.detail.response.posts.data;
+          var longMessage = [];
+          postsData.forEach(function (post) {
+            if(post.message !== undefined) {
+              longMessage += post.message + " ";
+            }
+          });
+          var fbResponse = a.detail.response;
+          this.searchCriterion2 = longMessage;
+          this.$.emotion.body = longMessage;
+          this.$.emotion.generateRequest();
+          this.$.personality.generateRequest();
+          this.$.agegender.generateRequest();
         },
 
         buildSearchRequest: function (searchCriterion2) {
           this.$.emotion.body = searchCriterion2;
+          this.$.personality.body = searchCriterion2;
+          this.$.agegender.body = searchCriterion2;
         },
 
         convertToEmotion: function () {
           this.$.emotion.generateRequest();
           this.$.personality.generateRequest();
+          this.$.agegender.generateRequest();
         },
 
         handleError: function (e) {
@@ -147,10 +188,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.data[0].push({axis: key, value: val})
             }
           }
-
           this.emotions = this.data;
-//          this.fire("emotions-changed");
-//          RadarChart(this.$.radarChart, this.data, this.radarChartOptions);
         },
 
         responseHandlerPersonality: function (e, detail) {
@@ -159,8 +197,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.personalityJSON[p] = this.personalityJSON[p].toFixed(3);
           }
           this.personalities = this.personalityJSON;
-        }
+        },
 
+        responseHandlerAgeGender: function (e, detail) {
+          console.log(detail.xhr.response.gender);
+          this.gender = detail.xhr.response.gender;
+          this.age = detail.xhr.response.age;
+        }
 
       });
     })();

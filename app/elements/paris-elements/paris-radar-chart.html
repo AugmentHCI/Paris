@@ -23,14 +23,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template>
     <style include="shared-styles iron-flex">
 
+
     </style>
 
     <h1>Emotion</h1>
-
     <div id="radarChart">
       <svg id="outerLayer">
         <svg id="layerradar"></svg>
       </svg>
+    </div>
+    <div id="barChart">
+      <svg id="barLayer"></svg>
     </div>
   </template>
 
@@ -65,7 +68,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         ready: function () {
 
-//          this.scopeSubtree(this.$.radarChart, true);
+//          this.scopeSubtree(this.$.barChart, true);
 
           this.emotions = {
             anticipation: 0,
@@ -91,11 +94,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           for (var key in this.emotions2) {
             if (this.emotions2.hasOwnProperty(key)) {
               var val = this.emotions2[key];
-              this.emotions[0].push({axis: key, value: val, id:order.indexOf(key)})
+              this.emotions[0].push({axis: key, value: val, id: order.indexOf(key)})
             }
           }
 
-          this.emotions[0] = this.emotions[0].sort(function (a,b) {
+          this.emotions[0] = this.emotions[0].sort(function (a, b) {
             return a.id - b.id;
           });
 
@@ -131,13 +134,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           };
 
           RadarChart(this.$.layerradar, this.emotions, this.radarChartOptions);
-          console.log(this.$.radarChart);
 
           var width = this.width + this.margin.left + this.margin.right,
             height = this.height + this.margin.top + this.margin.bottom,
             τ = 2 * Math.PI;
 
-          var svg = d3.select(this.$.outerLayer).attr("width", width).attr("height",height);
+          var svg = d3.select(this.$.outerLayer).attr("width", width).attr("height", height);
 
 
 // An arc function with all values bound except the endAngle. So, to compute an
@@ -160,47 +162,81 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           var opacity = 0.3;
 
-          console.log(this.emotions);
 
           var index = 0;
           this.emotions[0].forEach(function (emo) {
             arcLayer.append("path")
-              .datum({startAngle: (index * τ/8) - τ/16, endAngle: (index+1)*τ/8 - τ/16 })
+              .datum({startAngle: (index * τ / 8) - τ / 16, endAngle: (index + 1) * τ / 8 - τ / 16})
               .style("fill", getColorEmotion(emo.axis))
               .style("opacity", opacity)
               .attr("d", arc);
             index++;
-            console.log(emo.axis)
+
           });
 
           function getColorEmotion(emotion) {
             switch (emotion) {
               case "joy":
-                    return "yellow";
+                return "yellow";
               case "trust":
-                    return "green";
+                return "green";
               case "fear":
-                    return "white";
+                return "white";
               case "surprise":
-                    return "lightblue";
+                return "lightblue";
               case "sadness":
-                    return "blue";
+                return "blue";
               case "disgust":
-                    return "purple";
+                return "purple";
               case "anger":
-                    return "red";
+                return "red";
               case "anticipation":
-                    return "orange";
+                return "orange";
               default:
-                    return "black";
+                return "black";
             }
           }
-// Add the foreground arc in orange, currently showing 12.7%.
-//          var joy = arcLayer.append("path")
-//            .datum({startAngle: τ/16, endAngle: 3*τ/16})
-//            .style("fill", "yellow")
-//            .style("opacity", opacity)
-//            .attr("d", arc);
+
+
+//          var barHeight = 20;
+//
+//          var x = d3.scale.linear()
+//            .domain([0, 1])
+//            .range([0, width]);
+//
+//          var chart = d3.select(this.$.barLayer)
+//            .attr("width", width)
+//            .attr("height", height);
+//
+//          var bar = chart.selectAll("g")
+//            .data(this.emotions[0])
+//            .enter().append("g")
+//            .attr("transform", function (d, i) {
+//              return "translate(0," + i * barHeight + ")";
+//            });
+//          bar.append("rect")
+//            .attr("width", function (d) {
+//              return x(+d.value+0.1);
+//            })
+//            .attr("height", barHeight - 1)
+//            .style("fill", function (d) {
+//              return getColorEmotion(d.axis)
+//            })
+//            .style("opacity", opacity);
+//
+//          bar
+//            .append("text")
+//            .attr("x", function (d) {
+//              return x(+d.value) - 3;
+//            })
+//            .attr("y", barHeight / 2)
+////            .attr("dy", ".35em")
+//            .style("fill", "white")
+//            .style("font", "12px sans-serif")
+//            .style("text-anchor","end")
+//            .text(function (d) {
+//              return d.value ;
+//            });
 
         }
       });

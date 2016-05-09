@@ -1,0 +1,238 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+
+<script src="../../bower_components/d3/d3.min.js"></script>
+
+<!--<script src="../../bower_components/underscore/underscore-min.js"></script>-->
+
+<dom-module id="paris-gender-chart">
+  <template>
+    <style include="shared-styles iron-flex">
+
+    </style>
+
+    <h1>Gender</h1>
+    <!--<iron-image alt="male" style="width:40px; height:40px;" sizing="contain"-->
+                <!--src="../../images/male.png"></iron-image>-->
+    <div id="genderChart">
+      <svg id="outerLayer">
+      </svg>
+    </div>
+    <!--<iron-image alt="female" style="width:40px; height:40px;" sizing="contain"-->
+                <!--src="../../images/female.png"></iron-image>-->
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'paris-gender-chart',
+
+        properties: {
+          gender: {
+            type: Object,
+            notify: true,
+            observer: '_genderChanged'
+          }
+        },
+
+        _genderChanged: function (newValue, oldValue) {
+          this.needle.moveTo(newValue.male);
+        },
+
+        attached: function () {
+          this.width = window.innerWidth;
+          this.async(function () {
+            this.width = this.$.genderChart.clientWidth;
+          }, 1);
+        },
+
+        ready: function () {
+          var needle;
+
+          (function (svgElement) {
+
+            var barWidth, chart, chartInset, degToRad, repaintGauge,
+              height, margin, padRad, percToDeg, percToRad, radius, svg, totalPercent, width;
+
+            padRad = 0.025;
+            chartInset = 10;
+
+            // Orientation of gauge:
+            totalPercent = .75;
+
+            var el = d3.select(svgElement);
+
+            var marginHack = (window.innerWidth < 600) ? 0 : 50;
+            var multiplier = (window.innerWidth > 1200) ? 0.45 : 0.9;
+
+            var minHeight = (window.innerHeight > 1200) ? 320 : 190;
+
+            margin = {top: 60, right: 60, bottom: 60, left: 60},
+              width = ((window.innerWidth * multiplier) - marginHack) * 0.9 - margin.left - margin.right,
+              height = d3.min([width, minHeight]);
+
+            el.attr("width", width).attr("height", height);
+
+            el
+              .append("svg:image")
+              .attr('x',10)
+              .attr('y',10)
+              .attr('width', 40)
+              .attr('height', 40)
+              .attr("xlink:href","../../images/male.png");
+
+            el
+              .append("svg:image")
+              .attr('x',width - 40)
+              .attr('y',10)
+              .attr('width', 40)
+              .attr('height', 40)
+              .attr("xlink:href","../../images/female.png");
+
+            radius = Math.min(width, height) / 2;
+            barWidth = 40 * width / 300;
+
+
+            /*
+             Utility methods
+             */
+            percToDeg = function (perc) {
+              return perc * 360;
+            };
+
+            percToRad = function (perc) {
+              return degToRad(percToDeg(perc));
+            };
+
+            degToRad = function (deg) {
+              return deg * Math.PI / 180;
+            };
+
+            // Create SVG element
+            svg = el.append('svg').attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
+
+            // Add layer for the panel
+            chart = svg.append('g').attr('transform', "translate(" + ((width + margin.left) / 2) + ", " + ((height + margin.top) / 2) + ")");
+            chart.append('path').attr('class', "arc chart-filled");
+            chart.append('path').attr('class', "arc chart-empty");
+
+            var arc2 = d3.svg.arc().outerRadius(radius - chartInset).innerRadius(radius - chartInset - barWidth)
+            var arc1 = d3.svg.arc().outerRadius(radius - chartInset).innerRadius(radius - chartInset - barWidth)
+
+            repaintGauge = function (perc) {
+              var next_start = totalPercent;
+              var arcStartRad = percToRad(next_start);
+              var arcEndRad = arcStartRad + percToRad(perc / 2);
+              next_start += perc / 2;
+
+
+              arc1.startAngle(arcStartRad).endAngle(arcEndRad);
+
+              arcStartRad = percToRad(next_start);
+              arcEndRad = arcStartRad + percToRad((1 - perc) / 2);
+
+              arc2.startAngle(arcStartRad + padRad).endAngle(arcEndRad);
+
+
+              chart.select(".chart-filled").attr('d', arc1).style('fill', 'steelblue');
+              chart.select(".chart-empty").attr('d', arc2).style('fill', 'pink');
+
+            };
+
+            var Needle = (function () {
+
+              /**
+               * Helper function that returns the `d` value
+               * for moving the needle
+               **/
+              var recalcPointerPos = function (perc) {
+                var centerX, centerY, leftX, leftY, rightX, rightY, thetaRad, topX, topY;
+                thetaRad = percToRad(perc / 2);
+                centerX = 0;
+                centerY = 0;
+                topX = centerX - this.len * Math.cos(thetaRad);
+                topY = centerY - this.len * Math.sin(thetaRad);
+                leftX = centerX - this.radius * Math.cos(thetaRad - Math.PI / 2);
+                leftY = centerY - this.radius * Math.sin(thetaRad - Math.PI / 2);
+                rightX = centerX - this.radius * Math.cos(thetaRad + Math.PI / 2);
+                rightY = centerY - this.radius * Math.sin(thetaRad + Math.PI / 2);
+                return "M " + leftX + " " + leftY + " L " + topX + " " + topY + " L " + rightX + " " + rightY;
+              };
+
+              function Needle(el) {
+                this.el = el;
+                this.len = width / 3;
+                this.radius = this.len / 6;
+              }
+
+              Needle.prototype.render = function () {
+                this.el.append('circle').attr('class', 'needle-center').attr('cx', 0).attr('cy', 0).attr('r', this.radius).style('fill', 'grey');
+                return this.el.append('path').attr('class', 'needle').attr('d', recalcPointerPos.call(this, 0)).style('fill', 'grey');
+              };
+
+              Needle.prototype.moveTo = function (perc) {
+                var self,
+                  oldValue = this.perc || 0;
+
+                this.perc = perc;
+                self = this;
+
+                // Reset pointer position
+                this.el.transition().delay(100).ease('quad').duration(200).select('.needle').tween('reset-progress', function () {
+                  return function (percentOfPercent) {
+                    var progress = (1 - percentOfPercent) * oldValue;
+
+                    repaintGauge(progress);
+                    return d3.select(this).attr('d', recalcPointerPos.call(self, progress));
+                  };
+                });
+
+                this.el.transition().delay(300).ease('bounce').duration(1500).select('.needle').tween('progress', function () {
+                  return function (percentOfPercent) {
+                    var progress = percentOfPercent * perc;
+
+                    repaintGauge(progress);
+                    return d3.select(this).attr('d', recalcPointerPos.call(self, progress));
+                  };
+                });
+
+              };
+
+              return Needle;
+
+            })();
+
+            needle = new Needle(chart);
+            needle.render();
+
+            needle.moveTo(0.5);
+
+          })(this.$.outerLayer);
+
+          this.needle = needle;
+
+//          setInterval(function(){
+//            needle.moveTo(Math.random());
+//          }, 5000);
+
+        }
+      });
+    })();
+  </script>
+</dom-module>

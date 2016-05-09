@@ -21,8 +21,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #sentimentSlider {
         width: 170px;
         margin: 80px;
-        --webkit-transform: rotate(90deg);
-        transform: rotate(90deg);
+        --webkit-transform: rotate(-90deg);
+        transform: rotate(-90deg);
       }
       .sentiment-container {
         padding-top: 16px;
@@ -43,12 +43,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     <div  class="sentiment-container layout vertical center">
-        <iron-image alt="Sad" style="width:40px; height:40px;" sizing="contain"
-                    src="../../images/sad.jpg"></iron-image>
+      <iron-image alt="Happy" style="width:40px; height:40px;" sizing="contain"
+                  src="../../images/happy.png"></iron-image>
         <paper-slider id="sentimentSlider"  pin="true" step="0.01" snaps="false" min=0 max=1
                       value="{{sentiments.positive}}f"></paper-slider>
-        <iron-image alt="Happy" style="width:40px; height:40px;" sizing="contain"
-                    src="../../images/happy.png"></iron-image>
+      <iron-image alt="Sad" style="width:40px; height:40px;" sizing="contain"
+                  src="../../images/sad.jpg"></iron-image>
       </div>
   </template>
 

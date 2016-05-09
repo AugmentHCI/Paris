@@ -1,0 +1,102 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+
+<script src="../../bower_components/d3/d3.min.js"></script>
+
+<!--<script src="../../bower_components/underscore/underscore-min.js"></script>-->
+
+<dom-module id="paris-age-chart">
+  <template>
+    <style include="shared-styles iron-flex">
+
+    </style>
+
+    <h1>Gender</h1>
+    <!--<iron-image alt="male" style="width:40px; height:40px;" sizing="contain"-->
+                <!--src="../../images/male.png"></iron-image>-->
+    <div id="ageChart">
+      <svg id="outerLayer">
+      </svg>
+    </div>
+    <!--<iron-image alt="female" style="width:40px; height:40px;" sizing="contain"-->
+                <!--src="../../images/female.png"></iron-image>-->
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+        is: 'paris-age-chart',
+
+        properties: {
+          age: {
+            type: Object,
+            notify: true,
+            observer: '_ageChanged'
+          }
+        },
+
+        _ageChanged: function (newValue, oldValue) {
+          console.log(newValue);
+//          this.needle.moveTo(newValue.male);
+        },
+
+        attached: function () {
+          this.width = window.innerWidth;
+          this.async(function () {
+            this.width = this.$.ageChart.clientWidth;
+          }, 1);
+        },
+
+        ready: function () {
+//          var needle;
+//                    this.scopeSubtree(this.$.ageChart, true);
+
+
+          (function (svgElement) {
+
+            data= {class1: "0.114604897262", class2: "0.519256414994", class3: "0.2186077367", class4: "0.10451495172", class5: "0.0430159993253"};
+
+            var ageData = data.map(function(c) {
+              console.log(c);
+            });
+
+            var marginHack = (window.innerWidth < 600) ? 0 : 50;
+            var multiplier = (window.innerWidth > 1200) ? 0.45 : 0.9;
+
+            var minHeight = (window.innerHeight > 1200) ? 320 : 190;
+
+            var margin = {top: 60, right: 60, bottom: 60, left: 60},
+               width = ((window.innerWidth * multiplier) - marginHack) * 0.9 - margin.left - margin.right,
+               height = d3.min([width, minHeight]);
+
+            var svg = d3.select(svgElement).
+              attr('width',width).attr('height', height);
+
+            svg
+
+
+
+          })(this.$.outerLayer);
+
+//          this.needle = needle;
+        }
+      });
+    })();
+  </script>
+</dom-module>
